@@ -40,5 +40,7 @@ for i in range(0,3):
     for j in range(0,3):
         # print([(0+i*100,0+j*100),(100+i*100,100+j*100)])
         dr.rectangle([(0+j*100,0+i*100),(100+j*100,100+i*100)], fill="white", outline = "black")
-        dr.ellipse([(0+j*100 - 1,0+i*100- 1),(100+j*100 + 1,100+i*100 + 1)], fill = "white", outline = "black")
+        img = Image.open("ChessSet.jpeg")
+        img.thumbnail((100,100))
+        im.paste(im=img,box=(0+j*100,0+i*100))
 im.show()
