@@ -24,13 +24,12 @@ MFRC522 mfrc522_9(SS_PIN_9, RST_PIN);
 
 byte ssPins[] = {SS_PIN_1, SS_PIN_2, SS_PIN_3, SS_PIN_4, SS_PIN_5, SS_PIN_6, SS_PIN_7, SS_PIN_8, SS_PIN_9};
 
-byte readedCard[9][4];
 MFRC522 mfrc522[9];
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(9600);
-  //Serial.begin(115200);
+  //Serial.begin(9600);
+  Serial.begin(115200);
   SPI.begin();
   for (uint8_t reader = 0; reader < 9; reader++) {
     mfrc522[reader].PCD_Init(ssPins[reader], RST_PIN);
@@ -41,27 +40,27 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
+  String output_arr = "";
   for (uint8_t reader = 0; reader < 9; reader++){
     if(getRFID(reader)) {
-      Serial.print(F("Reader "));
-      Serial.print(reader);
-      Serial.print(": ID:");
-      printUID(readedCard[reader]);
-      Serial.println("");
+      output_arr.concat(printUID(readedCard[reader]));
     } else {
-      Serial.print(reader);
-      Serial.print("Not Present");
-      Serial.println("");
+      output_arr.concat("0");
+    }
+    if (reader < 9) {
+      output_arr.concat(",");
     }
   }
-
+  Serial.println(output_arr);
 }
 
-void printUID(byte *buffer){
-  for (byte i = 0; i < 4; i++){
-    Serial.print(buffer[i] < 0x10 ? " 0" : " ");
-    Serial.print(buffer[i], HEX);
+String printUID(byte *buffer){
+  String id = "";
+  for (byte i = 0; i < 4; i++) {
+    id.concat(buffer[i] < 0x10 ? " 0" : " ");
+    id.concat(String(buffer[i], HEX));
   }
+  return id;
 }
 
 bool getRFID(byte readern)
