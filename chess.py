@@ -1,8 +1,20 @@
-# import serial
+import serial
 import time
 
-rfid2des = {"7C 01 A1 5A":"K1"}
+rfid2des = {
+    "fc 87 a1 5a": "R1",
+    "5c 26 a1 5a": "R2",
+    "7c 01 a1 5a": "K1",
+    "9c bf 92 5a": "K2",
+    "dc e2 8b 5a": "Q1",
+    "3c a1 92 5a": "Q2",
+}
 
+board_mapping = [
+    [],
+    [5, 1, 4],
+    [2, 0, 3],
+]
 class chess_piece:
     def __init__(self,rfid):
         self.rfid = rfid
@@ -20,14 +32,14 @@ def read_input(input):
 
     
 
-# arduino = serial.Serial(port='/dev/cu.usbmodem144201', baudrate=115200, timeout=.1)
+arduino = serial.Serial(port='/dev/cu.usbmodem144201', baudrate=115200, timeout=.1)
 def write_read():
     time.sleep(0.05)
     data = arduino.readline().decode()
     return data
-# while True:
-#     value = write_read()
-#     print(value) # printing the value
+while True:
+    value = write_read()
+    print(value) # printing the value
 
 # print(read_input("7C 01 A1 5A,7C 01 A1 5A,7C 01 A1 5A,7C 01 A1 5A,7C 01 A1 5A,7C 01 A1 5A,7C 01 A1 5A,7C 01 A1 5A,7C 01 A1 5A"))
 
