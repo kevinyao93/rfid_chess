@@ -1,58 +1,63 @@
 import serial
 import time
 
+from multiprocessing import Process, Manager, Pool
+from PIL import Image, ImageFont, ImageDraw
+import cv2
+import numpy as np
+
+class ChessPiece:
+    def __init__(self,rfid, description, image):
+        self.rfid = rfid
+        self.description = description
+        self.image = image
+
 rfid2des = {
-    "fc 87 a1 5a": "R1",
-    "5c 26 a1 5a": "R2",
-    "7c 01 a1 5a": "K1",
-    "9c bf 92 5a": "K2",
-    "dc e2 8b 5a": "Q1",
-    "3c a1 92 5a": "Q2",
+    "fc 87 a1 5a": ChessPiece("fc 87 a1 5a", "R1", "rook_1.png"),#
+    "5c 26 a1 5a": ChessPiece("5c 26 a1 5a", "R2", "rook_2.jpg"),#
+    "7c 01 a1 5a": ChessPiece("7c 01 a1 5a", "K1", "white_king_1.jpg"),#"K1",
+    "9c bf 92 5a": ChessPiece("9c bf 92 5a", "K2", "white_king_2.png"),#"K2",
+    "dc e2 8b 5a": ChessPiece("dc e2 8b 5a", "Q1", "queen_1.jpg"),#"Q1",
+    "3c a1 92 5a": ChessPiece("3c a1 92 5a", "Q2", "queen_2.jpg"),#"Q2",
 }
 
-board_mapping = [
-    [],
-    [5, 1, 4],
-    [2, 0, 3],
-]
-class chess_piece:
-    def __init__(self,rfid):
-        self.rfid = rfid
-        self.description = rfid2des[rfid]
-        self.image = ""
 
-
-def read_input(input):
-    output = [[None for _ in range(3)] for _ in range(3)]
-    ls = input.split(",")
-    for i in range(len(output)):
-        for j in range(len(output[0])):
-            output[i][j] = chess_piece(ls[i*3+j])
-    return output
-
+def concat_vh(list_2d):
     
+      # return final image
+    return cv2.vconcat([cv2.hconcat(list_h) 
+                        for list_h in list_2d])
+      
 
-arduino = serial.Serial(port='/dev/cu.usbmodem144201', baudrate=115200, timeout=.1)
 def write_read():
-    time.sleep(0.05)
-    data = arduino.readline().decode()
-    return data
-while True:
-    value = write_read()
-    print(value) # printing the value
+    arduino = serial.Serial(port='/dev/cu.usbmodem144201', baudrate=115200, timeout=.1)
+    while True:
+        data = arduino.readline().decode()
+        board_layout = []
+        if len(data) > 1:
+            data_array = data.split(',')
+            board_layout.append(data_array[0: 3])
+            board_layout.append(data_array[3: 6])
+            board_layout.append(data_array[6: 9])
 
-# print(read_input("7C 01 A1 5A,7C 01 A1 5A,7C 01 A1 5A,7C 01 A1 5A,7C 01 A1 5A,7C 01 A1 5A,7C 01 A1 5A,7C 01 A1 5A,7C 01 A1 5A"))
+            blank_image = np.full([100, 100, 3], 255, dtype=np.uint8)    
+            rect = cv2.rectangle(blank_image, (0, 0), (100, 100), (0, 0, 0), 5)
+            images = [[rect for _ in range(3)] for _ in range(3)]
 
-from PIL import Image, ImageFont, ImageDraw
+            for i in range(0,3):
+                for j in range(0,3):
+                    rfid = board_layout[i][j].lstrip(' ')
+                    if rfid == '0':
+                        images[i][j] = rect
+                    else:
+                        chess_piece = rfid2des[rfid]
+                        section = cv2.resize(cv2.imread(chess_piece.image), (100, 100))
+                        images[i][j] = section
+            
+            img_tile = concat_vh(images)
+            cv2.imshow('image', img_tile)
+            cv2.waitKey(1)
 
-im = Image.new('RGB', (300,300), (255,255,255))
-dr = ImageDraw.Draw(im)
-        # dr.rectangle(((0+(j)*100,0+(j)*100),(100+(j)*100, 100+(j)*100)), fill="blue", outline = "black")
-for i in range(0,3):
-    for j in range(0,3):
-        # print([(0+i*100,0+j*100),(100+i*100,100+j*100)])
-        dr.rectangle([(0+j*100,0+i*100),(100+j*100,100+i*100)], fill="white", outline = "black")
-        img = Image.open("ChessSet.jpeg")
-        img.thumbnail((100,100))
-        im.paste(im=img,box=(0+j*100,0+i*100))
-im.show()
+if __name__ == "__main__":
+    write_read()
+

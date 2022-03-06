@@ -24,6 +24,7 @@ MFRC522 mfrc522_9(SS_PIN_9, RST_PIN);
 
 byte ssPins[] = {SS_PIN_1, SS_PIN_2, SS_PIN_3, SS_PIN_4, SS_PIN_5, SS_PIN_6, SS_PIN_7, SS_PIN_8, SS_PIN_9};
 
+byte readedCard[9][4];
 MFRC522 mfrc522[9];
 
 void setup() {
