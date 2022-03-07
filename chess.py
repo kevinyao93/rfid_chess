@@ -11,7 +11,7 @@ class ChessPiece:
         self.rfid = rfid
         self.description = description
         self.image = image
-77
+
 rfid2des = {
     "fc 87 a1 5a": ChessPiece("fc 87 a1 5a", "R1", "images/rook_1.png"),#
     "5c 26 a1 5a": ChessPiece("5c 26 a1 5a", "R2", "images/rook_2.png"),#
